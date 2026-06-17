@@ -5,6 +5,7 @@ export class HomePage {
     this.bannerMessage = page.locator(".banner__message");
     this.greeting = page.getByRole("heading", { name: /^hi /i });
     this.signOutButton = page.getByRole("button", { name: /sign out/i });
+    this.navbarRole = page.locator(".navbar__role");
   }
 
   async waitFor() {

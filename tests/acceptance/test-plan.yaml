@@ -9,11 +9,17 @@ specs:
           - feature: foyer-core.feature
             scenario: 'Sign in with valid credentials'
             status: covered
+          - feature: navbar-role-label.feature
+            scenario: 'Admin role label is shown in the navbar'
+            status: covered
       - id: R.2
         summary: 'Invalid credentials are rejected with a visible error and no sign-in'
         scenarios:
           - feature: foyer-core.feature
             scenario: 'Invalid credentials are rejected'
+            status: covered
+          - feature: navbar-role-label.feature
+            scenario: 'Regular user role label is shown in the navbar'
             status: covered
       - id: R.3
         summary: 'A signed-in person can sign out and is returned to the sign-in screen'
@@ -32,4 +38,25 @@ specs:
         scenarios:
           - feature: foyer-core.feature
             scenario: 'Home page greets the signed-in person'
+            status: covered
+  - id: navbar-role-label
+    source: docs/specs/navbar-role-label.md
+    requirements:
+      - id: R.1
+        summary: 'The navbar shows the role label for a signed-in admin'
+        scenarios:
+          - feature: foyer-core.feature
+            scenario: 'Sign in with valid credentials'
+            status: covered
+          - feature: navbar-role-label.feature
+            scenario: 'Admin role label is shown in the navbar'
+            status: covered
+      - id: R.2
+        summary: 'The navbar shows the role label for a signed-in regular user'
+        scenarios:
+          - feature: foyer-core.feature
+            scenario: 'Invalid credentials are rejected'
+            status: covered
+          - feature: navbar-role-label.feature
+            scenario: 'Regular user role label is shown in the navbar'
             status: covered
