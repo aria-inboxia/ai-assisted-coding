@@ -37,6 +37,14 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
+// Crash-safe write: write to a temp file then atomically rename into place.
+function atomicWrite(file, contents) {
+  ensureDir();
+  const tmp = `${file}.tmp`;
+  writeFileSync(tmp, contents);
+  renameSync(tmp, file);
+}
+
 function blankPhase() {
   return {
     status: "pending", // pending | running | awaiting_approval | done | error | cancelled
@@ -72,11 +80,8 @@ export function createEpic({ title, input, links }) {
 }
 
 export function writeEpic(epic) {
-  ensureDir();
   const updated = { ...epic, updatedAt: now() };
-  const tmp = `${epicFile(epic.id)}.tmp`;
-  writeFileSync(tmp, JSON.stringify(updated, null, 2));
-  renameSync(tmp, epicFile(epic.id));
+  atomicWrite(epicFile(epic.id), JSON.stringify(updated, null, 2));
   return updated;
 }
 
@@ -132,10 +137,7 @@ export function readSpentToday() {
 }
 
 export function addSpend(usd) {
-  ensureDir();
   const next = { date: today(), spentUsd: readSpentToday() + (usd || 0) };
-  const tmp = `${BUDGET_FILE}.tmp`;
-  writeFileSync(tmp, JSON.stringify(next, null, 2));
-  renameSync(tmp, BUDGET_FILE);
+  atomicWrite(BUDGET_FILE, JSON.stringify(next, null, 2));
   return next.spentUsd;
 }

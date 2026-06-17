@@ -44,15 +44,20 @@ export function subscribe(runId, res) {
   res.on("close", () => ch.clients.delete(res));
 }
 
+// Send to every client via `send` (returns false on a dead socket), pruning the dead.
+function pruneDead(ch, send) {
+  const dead = [];
+  for (const res of ch.clients) {
+    if (!send(res)) dead.push(res);
+  }
+  for (const res of dead) ch.clients.delete(res);
+}
+
 export function publish(runId, event, data) {
   const ch = channel(runId);
   ch.buffer.push({ event, data });
   if (ch.buffer.length > MAX_BUFFER) ch.buffer.shift();
-  const dead = [];
-  for (const res of ch.clients) {
-    if (!write(res, event, data)) dead.push(res);
-  }
-  for (const res of dead) ch.clients.delete(res);
+  pruneDead(ch, (res) => write(res, event, data));
 }
 
 export function closeChannel(runId) {
@@ -75,14 +80,13 @@ export function closeChannel(runId) {
 // clients are pruned so the next tick doesn't keep hitting them.
 export function pingAll() {
   for (const ch of channels.values()) {
-    const dead = [];
-    for (const res of ch.clients) {
+    pruneDead(ch, (res) => {
       try {
         res.write(": ping\n\n");
+        return true;
       } catch {
-        dead.push(res);
+        return false;
       }
-    }
-    for (const res of dead) ch.clients.delete(res);
+    });
   }
 }

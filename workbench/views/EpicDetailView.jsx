@@ -54,13 +54,13 @@ export function EpicDetailView({ epicId, onBack }) {
   // Reattach to an in-flight run after a page reload (runId is persisted on the phase).
   useEffect(() => {
     if (run || !epic) return;
-    for (const p of PHASES) {
-      const st = epic.phases[p.key];
-      if (st.status === "running" && st.runId) {
-        setActivePhase(p.key);
-        setRun({ runId: st.runId, phase: p.key });
-        break;
-      }
+    const running = PHASES.find(
+      (p) =>
+        epic.phases[p.key].status === "running" && epic.phases[p.key].runId,
+    );
+    if (running) {
+      setActivePhase(running.key);
+      setRun({ runId: epic.phases[running.key].runId, phase: running.key });
     }
   }, [epic, run]);
 
