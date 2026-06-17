@@ -4,14 +4,8 @@ import { HomePage } from "../pages/HomePage.js";
 
 const { Then } = createBdd(test);
 
-Then("the navbar shows the admin role label", async ({ page }) => {
+Then("the navbar shows the {word} role label", async ({ page }, role) => {
   const home = new HomePage(page);
   await expect(home.navbarRole).toBeVisible();
-  await expect(home.navbarRole).toHaveText("admin");
-});
-
-Then("the navbar shows the user role label", async ({ page }) => {
-  const home = new HomePage(page);
-  await expect(home.navbarRole).toBeVisible();
-  await expect(home.navbarRole).toHaveText("user");
+  await expect(home.navbarRole).toHaveText(role);
 });
