@@ -30,11 +30,6 @@ export function LiveRunView({ run, onCancel }) {
           </button>
         ) : null}
       </header>
-      {run.error ? (
-        <p role="alert" className="live-run__error">
-          {run.error}
-        </p>
-      ) : null}
       <div className="live-run__panes">
         <pre className="transcript" role="log" aria-live="polite">
           {run.text || "Waiting for the agent…"}

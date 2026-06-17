@@ -188,9 +188,6 @@
   color: var(--foyer-muted);
   font-size: 0.85rem;
 }
-.live-run__error {
-  color: var(--foyer-accent-rose);
-}
 .live-run__panes {
   display: grid;
   grid-template-columns: 1fr 1fr;

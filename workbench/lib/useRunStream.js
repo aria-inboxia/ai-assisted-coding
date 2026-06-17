@@ -1,12 +1,14 @@
 import { useEffect, useReducer } from "react";
 
-// Live state of one phase run, accumulated from the backend SSE stream.
+// Live state of one phase run, accumulated from the backend SSE stream. The
+// stream is a live-progress nicety only — the authoritative terminal status
+// comes from the `result` / `phase_status` events (and the detail view also
+// polls the epic), so a transient disconnect is never surfaced as an error.
 export const INITIAL = {
   status: "idle", // idle | running | complete | error | cancelled
   text: "",
   tools: [],
   result: null,
-  error: null,
 };
 
 // Pure reducer (exported for unit tests).
@@ -50,19 +52,14 @@ export function runReducer(state, action) {
       };
     case "result":
       return { ...state, status: "complete", result: action.data };
-    case "phase_status":
-      if (["cancelled", "timeout", "error"].includes(action.data.status)) {
-        return {
-          ...state,
-          status:
-            action.data.status === "timeout" ? "error" : action.data.status,
-        };
-      }
-      return state;
-    case "stream_error":
-      return state.status === "complete"
-        ? state
-        : { ...state, status: "error", error: action.error };
+    case "phase_status": {
+      if (state.status === "complete") return state; // don't override a finished run
+      const s = action.data.status;
+      if (s === "cancelled") return { ...state, status: "cancelled" };
+      if (s === "timeout" || s === "error")
+        return { ...state, status: "error" };
+      return state; // running / complete arrive via other events
+    }
     default:
       return state;
   }
@@ -76,6 +73,7 @@ const EVENTS = [
   "result",
   "phase_status",
 ];
+const TERMINAL_PHASE_STATUS = new Set(["cancelled", "timeout", "error"]);
 
 // Opens an EventSource for the given runId and reduces its events into state.
 // Pass runId = null when no run is active. onComplete must be stable (memoised).
@@ -98,15 +96,17 @@ export function useRunStream(runId, onComplete) {
         dispatch({ type: name, data });
         if (
           name === "result" ||
-          (name === "phase_status" && data.status === "cancelled")
+          (name === "phase_status" && TERMINAL_PHASE_STATUS.has(data.status))
         ) {
           es.close();
           if (onComplete) onComplete();
         }
       });
     }
-    es.onerror = () =>
-      dispatch({ type: "stream_error", error: "stream interrupted" });
+    // A dropped connection auto-reconnects and replays the buffered stream — it
+    // is never an error. Terminal status arrives via the events above, backed by
+    // the detail view's epic polling.
+    es.onerror = () => {};
 
     return () => es.close();
   }, [runId, onComplete]);

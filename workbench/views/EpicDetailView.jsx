@@ -66,6 +66,26 @@ export function EpicDetailView({ epicId, onBack }) {
 
   const stream = useRunStream(run?.runId ?? null, refresh);
 
+  // Backstop for a silently-dropped SSE stream: when the connection is lost the
+  // stream never reports a terminal status, so while it's still "running" we poll
+  // the epic to resolve the phase. On the happy path the stream's own onComplete
+  // refresh is the single fetch — this stops the moment the stream completes.
+  useEffect(() => {
+    if (!run || stream.status !== "running") return undefined;
+    const terminal = ["awaiting_approval", "done", "error", "cancelled"];
+    const id = setInterval(async () => {
+      try {
+        const fresh = await api.getEpic(epicId);
+        setEpic(fresh);
+        if (terminal.includes(fresh.phases[run.phase]?.status))
+          clearInterval(id);
+      } catch {
+        // transient; keep polling
+      }
+    }, 4000);
+    return () => clearInterval(id);
+  }, [run, epicId, stream.status]);
+
   async function startPhase(key) {
     setError(null);
     try {
@@ -186,11 +206,15 @@ export function EpicDetailView({ epicId, onBack }) {
           <div className="phase-gate">
             {def.withAnswers ? (
               <label className="auth-form__field">
-                <span>Resolved scope / answers (fed to the next phase)</span>
+                <span>
+                  Your answers / feedback — respond to the questions in the
+                  report above. This text is fed into the next phase.
+                </span>
                 <textarea
                   value={answers}
                   onChange={(e) => setAnswers(e.target.value)}
-                  rows={4}
+                  rows={6}
+                  placeholder="Answer the open questions, set scope, or give the agent direction…"
                 />
               </label>
             ) : null}
@@ -220,7 +244,8 @@ export function EpicDetailView({ epicId, onBack }) {
               </p>
             ) : null}
             <pre className="deliverable__text">
-              {phaseState.deliverable.finalText ||
+              {phaseState.deliverable.report ||
+                phaseState.deliverable.finalText ||
                 phaseState.deliverable.error ||
                 "(no output captured)"}
             </pre>

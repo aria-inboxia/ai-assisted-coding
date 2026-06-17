@@ -22,6 +22,7 @@ import {
 
 const execFileP = promisify(execFile);
 const GLOBAL_CONCURRENCY = 3;
+const REPORT_CAP = 24000; // max chars of agent narration kept in deliverable.report
 const live = new Map(); // epicId -> { child, phase, runId, cancelled, timedOut }
 const TRACE_TOOL = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -281,7 +282,7 @@ async function verifyImplement(dir) {
 
 async function finalize(epicId, phase, result, code, stderr, flags) {
   const def = PHASES[phase];
-  const { cancelled, timedOut, dir } = flags;
+  const { cancelled, timedOut, dir, report } = flags;
   const success = !!result && result.subtype === "success" && !result.isError;
   let status = cancelled
     ? "cancelled"
@@ -296,6 +297,11 @@ async function finalize(epicId, phase, result, code, stderr, flags) {
   let deliverable = result
     ? extractDeliverable(phase, result.finalText)
     : { kind: phase, finalText: "", error: stderr.slice(0, 1000) };
+  // Persist the full agent narration (e.g. the challenge questions) so the
+  // cockpit can show it — result.finalText is only the closing summary.
+  if (report && report.trim()) {
+    deliverable = { ...deliverable, report: report.slice(0, REPORT_CAP) };
+  }
 
   if (phase === "implement" && success && dir) {
     const verification = await verifyImplement(dir);
@@ -381,6 +387,7 @@ export function startPhase(epic, phase, runId) {
     }, def.timeoutMs);
 
     let lastResult = null;
+    let assistantText = "";
     let stderr = "";
     const rl = createInterface({ input: child.stdout });
     rl.on("line", (line) => {
@@ -399,8 +406,13 @@ export function startPhase(epic, phase, runId) {
         return; // ignore non-JSON lines defensively
       }
       if (evt.type === "result") lastResult = evt;
-      for (const sse of mapClaudeEvent(evt))
+      for (const sse of mapClaudeEvent(evt)) {
         publish(runId, sse.event, sse.data);
+        // Accumulate only up to the cap finalize() keeps so a long transcript
+        // can't grow the buffer unbounded.
+        if (sse.event === "assistant_text" && assistantText.length < REPORT_CAP)
+          assistantText += sse.data.text;
+      }
     });
     child.stderr.on("data", (d) => {
       stderr += d.toString();
@@ -431,6 +443,7 @@ export function startPhase(epic, phase, runId) {
         cancelled: entry.cancelled,
         timedOut: entry.timedOut,
         dir,
+        report: assistantText,
       });
       live.delete(epic.id);
       const sseStatus = entry.cancelled

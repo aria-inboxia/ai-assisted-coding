@@ -40,9 +40,13 @@ describe("runReducer", () => {
     expect(runReducer(s, { type: "reset" })).toEqual(INITIAL);
   });
 
-  it("maps timeout to error, keeps cancelled, ignores post-complete errors", () => {
+  it("maps phase_status timeout/error to error, keeps cancelled, never overrides complete", () => {
     expect(
       runReducer(INITIAL, { type: "phase_status", data: { status: "timeout" } })
+        .status,
+    ).toBe("error");
+    expect(
+      runReducer(INITIAL, { type: "phase_status", data: { status: "error" } })
         .status,
     ).toBe("error");
     expect(
@@ -51,10 +55,17 @@ describe("runReducer", () => {
         data: { status: "cancelled" },
       }).status,
     ).toBe("cancelled");
+    // a "running" phase_status is a no-op (status arrives via other events)
+    expect(
+      runReducer(INITIAL, { type: "phase_status", data: { status: "running" } })
+        .status,
+    ).toBe("idle");
+    // a finished run is never demoted to error by a late terminal phase_status
     const done = { ...INITIAL, status: "complete" };
-    expect(runReducer(done, { type: "stream_error", error: "x" }).status).toBe(
-      "complete",
-    );
+    expect(
+      runReducer(done, { type: "phase_status", data: { status: "error" } })
+        .status,
+    ).toBe("complete");
   });
 
   it("does not mutate prior state", () => {
