@@ -3,7 +3,7 @@ import { defineBddConfig } from "playwright-bdd";
 
 const testDir = defineBddConfig({
   features: "tests/acceptance/features/**/*.feature",
-  steps: "tests/acceptance/steps/**/*.js",
+  steps: ["tests/acceptance/fixtures.js", "tests/acceptance/steps/**/*.js"],
   outputDir: ".features-gen",
 });
 
@@ -15,6 +15,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: [
     ["html", { outputFolder: "playwright-report-acceptance", open: "never" }],
+    ["json", { outputFile: "test-results-acceptance/results.json" }],
   ],
   outputDir: "test-results-acceptance",
   use: {

@@ -1,6 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "ignoreExportsUsedInFile": true,
+  "entry": ["tools/trace/trace.js", "workbench/server/index.js", "workbench/main.jsx"],
   "rules": {
     "duplicates": "warn"
   },

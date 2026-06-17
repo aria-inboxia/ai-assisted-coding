@@ -9,6 +9,10 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
-    include: ["app/**/*.test.{js,jsx}"],
+    include: [
+      "app/**/*.test.{js,jsx}",
+      "tools/**/*.test.js",
+      "workbench/**/*.test.js",
+    ],
   },
 });

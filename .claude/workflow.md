@@ -31,7 +31,7 @@ Using the clarified requirements from Phase 0:
 - Propose `.feature` file(s) with Gherkin scenarios
 - If the source requirements are numbered, map each scenario to its requirement tag (`@R.N`); otherwise skip the mapping
 - Keep Gherkin free of test data — express business requirements only
-- Update `tests/acceptance/test-plan.yaml`
+- Regenerate the traceability matrix: `pnpm trace:gen` (writes `tests/acceptance/test-plan.yaml` + `TRACEABILITY.md` from the spec's `R.N` bullets and the `@R.N` scenario tags). These are generated artifacts — never hand-edit them.
 - STOP: user must approve `.feature` files before proceeding
 
 When `.feature` files already exist for the feature, read them first and propose only
@@ -80,6 +80,15 @@ command: `gh pr view`, `git log`, `curl`, etc.
 
 ## Phase 3: Ship
 
-- Ensure `test-plan.yaml` is up to date with coverage status
+- Ensure the traceability matrix is current (`pnpm trace:gen`) and the gate is green (`pnpm trace:check --results test-results-acceptance/results.json`)
 - Commit all changes
 - Use `/ship` to simplify code, run local CI checks, create the PR, record the demo, and trigger code review
+
+## Running via the Workbench
+
+The same four phases can be driven from a browser via the Workbench control plane
+(`pnpm workbench` + `pnpm dev`, then open `/workbench/`). It runs each phase as a
+headless `claude -p` session in a per-epic git worktree, enforces the Phase 0 and
+Phase 1 STOP gates, streams the live run, and surfaces the traceability matrix as a
+verification panel. Runs consume your own Claude usage up to the configured budget
+caps. See `workbench/README.md`.

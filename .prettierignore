@@ -6,10 +6,12 @@ coverage
 # Agent scaffolding (skills, rules, workflow docs)
 .agents
 .claude
+.context
 .cursor
 
 # Auto-generated
 .features-gen
+TRACEABILITY.md
 
 *.css
 *.yaml

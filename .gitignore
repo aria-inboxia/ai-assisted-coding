@@ -33,3 +33,7 @@ playwright-e2e.config.js
 .claude/plans/
 .claude/worktrees/
 .github-auth.json
+
+# Workbench control-plane (run state + per-epic worktrees)
+.workbench/
+.workbench-trees/

@@ -19,6 +19,17 @@ Persistence lives entirely in `localStorage`. There is no server, no DB, no rout
 
 All project commands are defined in `package.json` under `scripts`. Run `pnpm run` to list them.
 
+## Workbench (control plane)
+
+`workbench/` is a separate developer surface — **not** part of the Foyer app — that drives this repo's own four-phase workflow from an epic. Foyer stays a pure client app; the Workbench adds a localhost-only Node backend that runs Claude Code headless.
+
+- **`workbench/server/`** — a zero-dependency Node `http` + SSE service. `pnpm workbench` starts it on `127.0.0.1:4319`. It spawns `claude -p` per phase (challenge → test plan → implement → ship) with per-phase least-privilege tool allowlists, `--permission-mode acceptEdits` (never `bypassPermissions`), `--max-budget-usd` caps, a wall-clock timeout, and one git worktree per epic (branched off `origin/main`).
+- **`workbench/` (frontend)** — a second Vite entry served at `/workbench/` (Foyer stays at `/`). Epic intake → phase stepper with the workflow's STOP gates → live agent stream (SSE) → per-phase deliverables → the verified traceability matrix panel.
+- **Run it:** `pnpm workbench` (backend) + `pnpm dev`, then open `/workbench/`; or `pnpm build && pnpm preview` for the production build.
+- **Cost & safety:** each phase consumes **your own** Claude usage/billing up to the budget caps (configurable via `WORKBENCH_*` env; set `WORKBENCH_MODEL` to run a cheaper model). The backend binds localhost only and never force-pushes. See `workbench/README.md`.
+
+The requirements-traceability gate (`tools/trace/trace.js`) underpins both CI and the cockpit's matrix panel — see `.claude/testing_rules.md`.
+
 ## Implementation (TDD)
 
 **Always use the `/tdd-implement` skill** when starting Phase 2 of the workflow — i.e. when implementing a feature whose `.feature` scenarios from Phase 1 are approved. The skill enforces the TDD discipline (implementation checklist via TaskCreate, opportunistic test-first on non-trivial pure units, mandatory reflection step after each task) that's hard to maintain by hand. See `.claude/skills/tdd-implement/SKILL.md` for the full procedure.

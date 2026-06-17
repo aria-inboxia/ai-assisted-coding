@@ -50,8 +50,17 @@ Tag-based, configured in `tests/acceptance/fixtures.js`:
 
 - Keep Gherkin free of test data — express business requirements only.
 - If the source requirements are numbered (e.g., `R.1`, `R.2`), tag each scenario with its requirement ID (`@R.1`, `@R.2`, …). Skip the tag when requirements aren't numbered.
-- Update `tests/acceptance/test-plan.yaml` with coverage status.
+- The traceability matrix is **generated**, not hand-written: run `pnpm trace:gen` after changing a spec or a scenario's `@R.N` tags to refresh `tests/acceptance/test-plan.yaml` and `TRACEABILITY.md`.
 - Use page objects from `tests/acceptance/pages/` (one per view) to encapsulate selectors and common actions.
+
+### Requirements traceability
+
+`tools/trace/trace.js` reconciles three sources — the `- **R.N** —` requirement bullets in `docs/specs/*.md`, the `@R.N` tags on scenarios, and the acceptance run's JSON results — into `tests/acceptance/test-plan.yaml` + `TRACEABILITY.md`.
+
+- `pnpm trace:gen` regenerates both artifacts (commit them).
+- `pnpm trace:check` fails on an **uncovered** requirement (no `@R.N` scenario), an **orphan** `@R.N` tag (no such requirement), a **stale** committed artifact, and — with `--results` — a **covered scenario that did not pass**.
+
+CI runs the structural check in the static job and the results-aware check after the acceptance run, so "every requirement is covered by a passing scenario" is enforced, not assumed.
 
 ## Writing Robust Tests
 

@@ -1,0 +1,275 @@
+/* Workbench cockpit styles. Tokens (--foyer-*) come from app/app.css, imported
+   first in main.jsx; this file only adds cockpit-specific BEM blocks. */
+
+.workbench-intro {
+  color: var(--foyer-muted);
+  max-width: 60ch;
+  margin: 0 0 1.5rem;
+}
+
+/* --- status pill: the single status -> accent mapping ------------------- */
+.status-pill {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  border: 1px solid var(--foyer-border);
+  background: var(--foyer-surface);
+  color: var(--foyer-muted);
+  white-space: nowrap;
+}
+.status-pill--sky {
+  color: var(--foyer-accent-sky);
+  border-color: var(--foyer-accent-sky);
+  background: #f0f9ff;
+}
+.status-pill--amber {
+  color: var(--foyer-accent-amber);
+  border-color: var(--foyer-accent-amber);
+  background: #fffbeb;
+}
+.status-pill--emerald {
+  color: var(--foyer-accent-emerald);
+  border-color: var(--foyer-accent-emerald);
+  background: #f0fdf4;
+}
+.status-pill--rose {
+  color: var(--foyer-accent-rose);
+  border-color: var(--foyer-accent-rose);
+  background: #fff1f5;
+}
+
+/* --- epic list ---------------------------------------------------------- */
+.epic-list {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.epic-list__empty {
+  color: var(--foyer-muted);
+}
+.epic-card {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--foyer-border);
+  border-radius: 0.5rem;
+  background: var(--foyer-surface);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+.epic-card:hover {
+  border-color: var(--foyer-accent);
+}
+.epic-card__title {
+  font-weight: 600;
+}
+.epic-card__phase {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  color: var(--foyer-muted);
+  font-size: 0.85rem;
+}
+
+.intake-form {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 40rem;
+}
+
+/* --- detail view -------------------------------------------------------- */
+.workbench-detail__input {
+  color: var(--foyer-muted);
+  max-width: 70ch;
+}
+.workbench-detail__branch {
+  font-size: 0.85rem;
+  color: var(--foyer-muted);
+}
+
+/* --- phase stepper ------------------------------------------------------ */
+.phase-stepper {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0;
+  margin: 1.5rem 0;
+}
+.phase-stepper__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--foyer-border);
+  border-radius: 0.5rem;
+  background: var(--foyer-surface);
+  cursor: pointer;
+  font: inherit;
+}
+.phase-stepper__button--active {
+  border-color: var(--foyer-accent);
+  box-shadow: 0 0 0 1px var(--foyer-accent);
+}
+.phase-stepper__index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: var(--foyer-bg);
+  color: var(--foyer-muted);
+  font-size: 0.8rem;
+}
+
+/* --- phase panel -------------------------------------------------------- */
+.phase-panel {
+  border: 1px solid var(--foyer-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: var(--foyer-surface);
+}
+.phase-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.phase-panel__locked {
+  color: var(--foyer-muted);
+  font-style: italic;
+}
+.phase-gate {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--foyer-border);
+  display: grid;
+  gap: 0.75rem;
+}
+
+.deliverable {
+  margin-top: 1rem;
+}
+.deliverable__text,
+.transcript {
+  background: var(--foyer-bg);
+  border: 1px solid var(--foyer-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  overflow-x: auto;
+  max-height: 22rem;
+}
+
+/* --- live run ----------------------------------------------------------- */
+.live-run {
+  margin-top: 1.5rem;
+  border: 1px solid var(--foyer-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+.live-run__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.live-run__meta {
+  color: var(--foyer-muted);
+  font-size: 0.85rem;
+}
+.live-run__error {
+  color: var(--foyer-accent-rose);
+}
+.live-run__panes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+@media (max-width: 720px) {
+  .live-run__panes {
+    grid-template-columns: 1fr;
+  }
+}
+.tool-log {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.4rem;
+  align-content: start;
+  max-height: 22rem;
+  overflow-y: auto;
+}
+.tool-log__empty {
+  color: var(--foyer-muted);
+  font-size: 0.85rem;
+}
+.tool-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--foyer-border);
+  border-radius: 0.4rem;
+  font-size: 0.8rem;
+}
+.tool-row__name {
+  font-weight: 600;
+}
+.tool-row__input {
+  flex: 1;
+  color: var(--foyer-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- traceability matrix ------------------------------------------------ */
+.trace-matrix {
+  margin-top: 1.5rem;
+}
+.trace-matrix__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.trace-matrix__empty {
+  color: var(--foyer-muted);
+}
+.trace-matrix__table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+}
+.trace-matrix__table caption {
+  text-align: left;
+  color: var(--foyer-muted);
+  margin-bottom: 0.4rem;
+}
+.trace-matrix__table th,
+.trace-matrix__table td {
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--foyer-border);
+  vertical-align: top;
+}
+.trace-matrix__violations {
+  margin-top: 0.75rem;
+  color: var(--foyer-accent-rose);
+  font-size: 0.85rem;
+}
