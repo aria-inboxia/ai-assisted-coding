@@ -298,8 +298,10 @@ async function finalize(epicId, phase, result, code, stderr, flags) {
     ? extractDeliverable(phase, result.finalText)
     : { kind: phase, finalText: "", error: stderr.slice(0, 1000) };
   // Persist the full agent narration (e.g. the challenge questions) so the
-  // cockpit can show it — result.finalText is only the closing summary.
-  if (report && report.trim()) {
+  // cockpit can show it — result.finalText is only the closing summary. Skip it
+  // on a failed run so the partial narration can't mask the stderr diagnostic
+  // (deliverable.error) the user actually needs.
+  if (report && report.trim() && status !== "error") {
     deliverable = { ...deliverable, report: report.slice(0, REPORT_CAP) };
   }
 

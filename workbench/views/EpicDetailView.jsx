@@ -66,12 +66,18 @@ export function EpicDetailView({ epicId, onBack }) {
 
   const stream = useRunStream(run?.runId ?? null, refresh);
 
-  // Backstop for a silently-dropped SSE stream: when the connection is lost the
-  // stream never reports a terminal status, so while it's still "running" we poll
-  // the epic to resolve the phase. On the happy path the stream's own onComplete
-  // refresh is the single fetch — this stops the moment the stream completes.
+  // Backstop for a silently-dropped SSE stream: poll the epic while a run is
+  // active but the stream hasn't settled, so the phase still resolves if no
+  // terminal event ever arrives. Gating on "not settled" (rather than only while
+  // "running") matters — a drop before the first stream event leaves the status
+  // at "idle", and the run must still be backstopped. On the happy path the
+  // stream settles and its onComplete refresh is the single fetch.
+  const streamSettled =
+    stream.status === "complete" ||
+    stream.status === "cancelled" ||
+    stream.status === "error";
   useEffect(() => {
-    if (!run || stream.status !== "running") return undefined;
+    if (!run || streamSettled) return undefined;
     const terminal = ["awaiting_approval", "done", "error", "cancelled"];
     const id = setInterval(async () => {
       try {
@@ -84,7 +90,7 @@ export function EpicDetailView({ epicId, onBack }) {
       }
     }, 4000);
     return () => clearInterval(id);
-  }, [run, epicId, stream.status]);
+  }, [run, epicId, streamSettled]);
 
   async function startPhase(key) {
     setError(null);
